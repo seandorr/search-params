@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.css";
 import "./globals.scss";
 
 export const metadata: Metadata = {
@@ -13,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="theme">{children}</body>
+      <body className="theme">
+        <MantineProvider>{children}</MantineProvider>
+      </body>
     </html>
   );
 }

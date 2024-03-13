@@ -1,64 +1,34 @@
 "use client";
-import { ChangeEvent, ChangeEventHandler, FormEvent, useState } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { TextInput, Button } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import styles from "./page.module.scss";
 
-const SearchableInput = ({
-  label,
-  list,
-  options,
-  onChange,
-  defaultValue,
-}: {
-  label: string;
-  type?: string;
-  list?: string;
-  options: { id: number; value: string }[];
-  onChange: ChangeEventHandler<HTMLInputElement>;
-  defaultValue: string | undefined;
-}) => {
-  return (
-    <div className={styles.inputContainer}>
-      <label>{label}:</label>
-      <input
-        type="search"
-        list={list}
-        onChange={onChange}
-        defaultValue={defaultValue}
-      />
-      <datalist id={list}>
-        {options.map((option, key) => {
-          return <option key={key}>{option.value}</option>;
-        })}
-      </datalist>
-    </div>
-  );
-};
 interface IFormState {
   chemical: string;
   company: string;
 }
-export default function Home() {
-  const [formState, setFormState] = useState<IFormState>({
-    chemical: "",
-    company: "",
-  });
 
+export default function Home() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  const handleFormState = (e: ChangeEvent<HTMLInputElement>, key: string) => {
-    setFormState({ ...formState, [key]: e.target.value });
-  };
+  const form = useForm({
+    initialValues: {
+      chemical: searchParams.get("chemical")?.toString() || "",
+      company: searchParams.get("company")?.toString() || "",
+    },
+  });
 
-  const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
+    // form.onSubmit((values) => console.log(values));
     const params = new URLSearchParams(searchParams);
 
-    Object.keys(formState).map((input: string) => {
-      if (formState[input as keyof IFormState]) {
-        params.set(input, formState[input as keyof IFormState]);
+    Object.keys(form.values).map((input: string) => {
+      if (form.values[input as keyof IFormState]) {
+        params.set(input, form.values[input as keyof IFormState]);
       } else {
         params.delete(input);
       }
@@ -71,24 +41,17 @@ export default function Home() {
       <aside className={styles.sidebar}>
         <div className={styles.gap}>
           <form onSubmit={handleFormSubmit}>
-            <SearchableInput
+            <TextInput
               label="Chemical"
-              list="chemList"
-              options={[
-                { id: 1, value: "water" },
-                { id: 2, value: "melamin" },
-                { id: 3, value: "steam" },
-              ]}
-              onChange={(e) => handleFormState(e, "chemical")}
-              defaultValue={searchParams.get("chemical")?.toString()}
+              placeholder="Chemical"
+              {...form.getInputProps("chemical")}
             />
-
-            {/* <Input
+            <TextInput
               label="Company"
-              onChange={(e) => handleFormState(e, "company")}
-              defaultValue={searchParams.get("company")?.toString()}
-            /> */}
-            <button type="submit">Submit</button>
+              placeholder="Company"
+              {...form.getInputProps("company")}
+            />
+            <Button type="submit">Submit</Button>
           </form>
         </div>
       </aside>
