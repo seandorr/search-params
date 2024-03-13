@@ -1,95 +1,100 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import { ChangeEvent, ChangeEventHandler, FormEvent, useState } from "react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import styles from "./page.module.scss";
 
+const SearchableInput = ({
+  label,
+  list,
+  options,
+  onChange,
+  defaultValue,
+}: {
+  label: string;
+  type?: string;
+  list?: string;
+  options: { id: number; value: string }[];
+  onChange: ChangeEventHandler<HTMLInputElement>;
+  defaultValue: string | undefined;
+}) => {
+  return (
+    <div className={styles.inputContainer}>
+      <label>{label}:</label>
+      <input
+        type="search"
+        list={list}
+        onChange={onChange}
+        defaultValue={defaultValue}
+      />
+      <datalist id={list}>
+        {options.map((option, key) => {
+          return <option key={key}>{option.value}</option>;
+        })}
+      </datalist>
+    </div>
+  );
+};
+interface IFormState {
+  chemical: string;
+  company: string;
+}
 export default function Home() {
+  const [formState, setFormState] = useState<IFormState>({
+    chemical: "",
+    company: "",
+  });
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  const handleFormState = (e: ChangeEvent<HTMLInputElement>, key: string) => {
+    setFormState({ ...formState, [key]: e.target.value });
+  };
+
+  const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams);
+
+    Object.keys(formState).map((input: string) => {
+      if (formState[input as keyof IFormState]) {
+        params.set(input, formState[input as keyof IFormState]);
+      } else {
+        params.delete(input);
+      }
+      replace(`${pathname}?${params.toString()}`);
+    });
+  };
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
+      <aside className={styles.sidebar}>
+        <div className={styles.gap}>
+          <form onSubmit={handleFormSubmit}>
+            <SearchableInput
+              label="Chemical"
+              list="chemList"
+              options={[
+                { id: 1, value: "water" },
+                { id: 2, value: "melamin" },
+                { id: 3, value: "steam" },
+              ]}
+              onChange={(e) => handleFormState(e, "chemical")}
+              defaultValue={searchParams.get("chemical")?.toString()}
             />
-          </a>
+
+            {/* <Input
+              label="Company"
+              onChange={(e) => handleFormState(e, "company")}
+              defaultValue={searchParams.get("company")?.toString()}
+            /> */}
+            <button type="submit">Submit</button>
+          </form>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      </aside>
+      <main className={styles.mainContent}>
+        <div className={styles.gap}>Content</div>
+      </main>
     </main>
   );
 }

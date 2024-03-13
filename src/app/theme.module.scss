@@ -1,0 +1,11 @@
+:root {
+  .theme {
+    --dark-color: #08092c;
+    --light-color: #eaeaea;
+    --cta-color: #64a7ff;
+    --font-color: var(--dark-color);
+    --bg-color: var(--light-color);
+    --sidebar-bg-color: #dedede;
+    --sidebar-box-shadow: 0 0 8px rgba(8, 9, 44, 0.2);
+  }
+}
